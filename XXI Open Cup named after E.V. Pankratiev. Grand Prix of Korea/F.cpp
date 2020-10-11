@@ -1,4 +1,5 @@
 #include<bits/stdc++.h>
+#pragma GCC optimize(3)
 #define MAXV 500005
 #define MAXE 1000005
 #define INF 1000000000
@@ -68,7 +69,7 @@ int main()
     for(int i=0;i<n;i++) 
     {
         scanf("%d%d%lld",&s[i],&e[i],&w[i]);
-        s[i]--; e[i]++;
+        s[i]--; 
         dis.push_back(s[i]); dis.push_back(e[i]);
     }
     sort(dis.begin(),dis.end());
