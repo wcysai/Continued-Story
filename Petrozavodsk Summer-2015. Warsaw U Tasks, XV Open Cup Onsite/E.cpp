@@ -58,8 +58,8 @@
 #include<string.h>
 #include<stdlib.h>
 #include<stdio.h>
-#pragma GCC optimize("Ofast")
-#pragma GCC target("sse,sse2,sse3,ssse3,sse4,popcnt,abm,mmx,avx,tune=native")
+//#pragma GCC optimize("Ofast")
+//#pragma GCC target("sse,sse2,sse3,ssse3,sse4,popcnt,abm,mmx,avx,tune=native")
 #define ll   long long
 #define pb   push_back
 #define mp   make_pair
