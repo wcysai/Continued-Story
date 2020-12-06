@@ -2,40 +2,46 @@
 #define mp    make_pair
 #define fi    first
 #define se    second
-#define ll    long long
 using namespace std;
-ll n,S,ans;
-int m;
-string s[100005];
-ll k[100005];
+int n,q,ans[200005],t[400005],m;
+pair<int,int> b[400005];
+pair<pair<int,int>,int> a[400005];
+int mx(int x,int y){
+    return x>y?x:y;
+}
+void upd(int x,int k){
+    while(x<=m)t[x]=max(t[x],k),x+=(x&-x);
+}
+int get(int x){
+    int ret=0;
+    while(x)ret=mx(ret,t[x]),x-=(x&-x);
+    return ret;
+}
 int main(){
-    ios::sync_with_stdio(0);
-    cin>>n;
-    cin>>m;
-    for(int i=1;i<=m;++i)cin>>s[i]>>k[i];
-    for(int i=1;i<=m;++i){
-        int l=s[i].size();
-        ll o=0;
-        for(int j=0;j<l;++j)if(s[i][j]=='F')++o;
-        S+=o*k[i];
+    scanf("%d%d",&n,&q);
+    for(int i=1;i<=n;++i){
+        int x,y;
+        scanf("%d%d",&x,&y);
+        a[i]=mp(mp(1000000001-x,y),0);
     }
-    if(S<n){
-        cout<<-1<<endl;
-        return 0;
+    for(int i=1;i<=q;++i){
+        int x,y;
+        scanf("%d%d",&x,&y);
+        a[i+n]=mp(mp(1000000001-x,y),i);
     }
-    S=(S-n)*2;
-    ans=S;
-    for(int i=1;i<=m;++i){
-        int ss=0,mm=0,l=s[i].size();
-        for(int j=0;j<l;++j){
-            if(s[i][j]=='M')++ss;
-            else --ss;
-            if(ss<mm)mm=ss;
-        }
-        if(ss<0)ans=min(ans,S+ss*1ll*(k[i]-1)+mm);
-        else ans=min(ans,S+mm);
-        S+=ss*1ll*k[i];
+    n+=q;
+    sort(a+1,a+n+1);
+    for(int i=1;i<=n;++i)b[i]=mp(a[i].fi.se,i);
+    sort(b+1,b+n+1);
+    for(int i=1;i<=n;++i){
+        if(i==1||b[i].fi!=b[i-1].fi)++m;
+        a[b[i].se].fi.se=m;
     }
-    cout<<max(0ll,-1ll-ans)<<endl;
+    for(int i=1;i<=n;++i){
+        int o=get(a[i].fi.se);
+        if(a[i].se)ans[a[i].se]=o;
+        else upd(a[i].fi.se,o+1);
+    }
+    for(int i=1;i<=q;++i)printf("%d\n",ans[i]);
     return 0;
 }
