@@ -23,7 +23,7 @@ int solve(int l,int r,int x,int y)
             v.push_back(sg);
         }
     }
-    if(!v.size()) return dp[l][r][x][y]=0;
+    if(!v.size()) return dp[l][r][x][y]=0;  
     sort(v.begin(),v.end());
     if(v[0]!=0) return dp[l][r][x][y]=0;
     for(int i=1;i<(int)v.size();i++) if(v[i-1]+1<v[i]) return dp[l][r][x][y]=v[i-1]+1;
