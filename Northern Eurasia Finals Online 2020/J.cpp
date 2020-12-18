@@ -21,14 +21,13 @@ int main(){
     }
     for(int i=2;i<=n*2;++i)f[i]=1e9;
     for(int i=1;i<n;++i){
-        for(int j=i+1;j<=n;++j)c1[i][j]=c2[i][j]=1e9;
+        for(int j=i+1;j<=n;++j)c1[i][j]=c2[i][j]=1e9,l1[i][j]=l2[i][j]=-1.0;
     }
     for(int x=1;x<=n;++x){
          for(int y=x+1;y<=n;++y){
             if(mh[x][y-1]>=h[y]) continue;
             int _=H2[y][x];
             if(_+D2[y-1][x]>L2) continue;
-            if(L2>_+D2[y-1][x-1]) continue;
             bool ok=1;
             int __=L2-_;
             for(int i=x+1;i<y;++i){
@@ -44,12 +43,12 @@ int main(){
                     l1[x][y]=max(l1[x][y],_*1.0*(H2[y][i]+D2[y-1][i-1])/(H2[y][i]*1.0));
                 }
             }
+            if(L2>_+D2[y-1][x-1]) c1[x][y]=1e9;
         }
         for(int y=x+1;y<=n;++y){
             if(mh[x+1][y]>=h[x]) continue;
             int _=H2[y][x];
             if(_+D2[y-1][x]>L2) continue;
-            if(L2>_+D2[y][x]) continue;
             bool ok=1;
             int __=L2-_;
             for(int i=x+1;i<y;++i){
@@ -65,10 +64,12 @@ int main(){
                     l2[x][y]=max(l2[x][y],_*1.0*(H2[x][i]+D2[i][x])/(H2[x][i]*1.0));
                 }
             }
+            if(L2>_+D2[y][x]) c2[x][y]=1e9;
         }
     }
     for(int x=1;x<=n;++x){
         f[x*2]=min(f[x*2],f[x*2-1]+d[x]-d[x-1]);
+        if(x<n&&abs(h[x]-h[x+1])<=L)f[x*2+1]=min(f[x*2+1],f[x*2]+abs(h[x]-h[x+1]));
         for(int y=x+1;y<=n;++y){
             if(c1[x][y]<9e8)f[y*2-1]=min(f[y*2-1],f[x*2-1]+L+c1[x][y]);
         }
@@ -76,15 +77,21 @@ int main(){
             if(c2[x][y]<9e8)f[y*2]=min(f[y*2],f[x*2]+L+c2[x][y]);
         }
         for(int y=x+1;y<=n;++y){
-            if(c2[x][y]>9e8) continue;
+            if(l2[x][y]<-0.5) continue;
             for(int z=y+1;z<=n;++z){
-                if(c1[y][z]>9e8) continue;
-                f[z*2-1]=min(f[z*2-1],f[x*2]+L*2+max(0.0,c1[y][z]+c2[x][y]-D[y][y-1]));
-                double l=c2[x][y]+D[z-1][y];
-                l=l*l+H2[z][y];
-                if(l<L2+1e-10&&l>l1[y][z]-1e-10)f[z*2-1]=min(f[z*2-1],f[x*2]+L+sqrt(l));
-                l=c1[y][z]+D[y-1][x];
-                if(l<L2+1e-10&&l>l2[x][y]-1e-10)f[z*2-1]=min(f[z*2-1],f[x*2]+L+sqrt(l));
+                if(l1[y][z]<-0.5) continue;
+                if(l2[x][y]<9e8&&l1[y][z]<9e8)f[z*2-1]=min(f[z*2-1],f[x*2]+L*2+max(0.0,c1[y][z]+c2[x][y]-D[y][y-1]));
+                double l;
+                if(c2[x][y]<9e8){
+ l=c2[x][y]+D[z-1][y];
+                 l=l*l+H2[z][y];
+                 if(l<L2+1e-10&&l>l1[y][z]-1e-10)f[z*2-1]=min(f[z*2-1],f[x*2]+L+sqrt(l));
+             }
+             if(c1[y][z]<9e8){
+                 l=c1[y][z]+D[y-1][x];
+                 l=l*l+H2[x][y];
+                 if(l<L2+1e-10&&l>l2[x][y]-1e-10)f[z*2-1]=min(f[z*2-1],f[x*2]+L+sqrt(l));
+             }
             }
         }
         for(int y=x+1;y<=n;++y){
@@ -116,30 +123,38 @@ int main(){
             }
         }
         for(int y=x+1;y<=n;++y){
-            if(mh[x][y-1]>=h[y]) continue;
-            int _=H[y][x],__=D[y-1][x-1];
-            if(_*_+__*__>L2) continue;
-            bool ok=1;
-            for(int i=x+1;i<y;++i){
-                if(_*D[y-1][i-1]>=__*H[y][i]){
-                    ok=0;
-                    break;
-                }
-            }
-            if(ok)f[y*2-1]=min(f[y*2-1],f[x*2-1]+sqrt(_*_+__*__*1.0));
+         int _=D[y-1][x-1],__=_*_+H2[y][x];
+         if(__>L2) continue;
+         bool ok=1;
+         for(int i=x+1;i<y&&ok;++i){
+         if(D[i-1][x-1]*h[y]+D[y-1][i-1]*h[x]<_*h[i]) ok=0;
+         }
+         for(int i=x;i<y&&ok;++i){
+         if(D[i][x-1]*h[y]+D[y-1][i]*h[x]<_*h[i]) ok=0;
+         }
+         if(ok)f[y*2-1]=min(f[y*2-1],f[x*2-1]+sqrt(__*1.0));
         }
         for(int y=x+1;y<=n;++y){
-            if(mh[x+1][y]>=h[x]) continue;
-            int _=H[y][x],__=D[y][x];
-            if(_*_+__*__>L2) continue;
-            bool ok=1;
-            for(int i=x+1;i<y;++i){
-                if(_*D[i][x]>=__*H[x][i]){
-                    ok=0;
-                    break;
-                }
-            }
-            if(ok)f[y*2]=min(f[y*2],f[x*2]+sqrt(_*_+__*__*1.0));
+         int _=D[y][x],__=_*_+H2[y][x];
+         if(__>L2) continue;
+         bool ok=1;
+         for(int i=x+1;i<=y&&ok;++i){
+         if(D[i-1][x]*h[y]+D[y][i-1]*h[x]<_*h[i]) ok=0;
+         }
+         for(int i=x+1;i<y&&ok;++i){
+         if(D[i][x]*h[y]+D[y][i]*h[x]<_*h[i]) ok=0;
+         }
+         if(ok)f[y*2]=min(f[y*2],f[x*2]+sqrt(__*1.0));
+        }
+        for(int y=x+1;y<=n;++y){
+         int _=D[y-1][x],__=_*_+H2[y][x];
+         if(__>L2) continue;
+         bool ok=1;
+         for(int i=x+1;i<y&&ok;++i){
+         if(D[i-1][x]*h[y]+D[y-1][i-1]*h[x]<_*h[i]) ok=0;
+         if(D[i][x]*h[y]+D[y-1][i]*h[x]<_*h[i]) ok=0;
+         }
+         if(ok)f[y*2-1]=min(f[y*2-1],f[x*2]+sqrt(__*1.0));
         }
     }
     if(f[n*2]>9e8)printf("-1\n");
