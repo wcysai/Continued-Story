@@ -27,5 +27,9 @@ int main()
             bs tmp; tmp.reset();
             for(int k=i;k<=j;k++) tmp.set(k);
             for(int k=0;k<n;k++) f[k]=save[k]&tmp;
+            for(int k=0;k<n;k++)
+            {
+                
+            }
         }
 }
