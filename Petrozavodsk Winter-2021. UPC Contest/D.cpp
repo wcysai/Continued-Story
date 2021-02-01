@@ -1,5 +1,5 @@
 #include<bits/stdc++.h>
-#define MAXN 80005
+#define MAXN 100005
 #define MAXM 1000005
 #define MAXT 1000000001
 #define INF 1000000000000000000LL
@@ -10,13 +10,15 @@ using namespace std;
 typedef long long ll;
 typedef pair<int,int> P;
 int n,q,tot;
-bool has[4*MAXN];
-int ans[4*MAXN];
+bool has[MAXM];
+int ans[MAXM],lson[MAXM],rson[MAXM];;
 map<pair<P,int>,int> mp;
 vector<int> v;
+int cnt=0;
 int compare(int a,int b,int w)
 {
     if(mp.find(make_pair(P(a,b),w))!=mp.end()) return mp[make_pair(P(a,b),w)];
+    if(mp.find(make_pair(P(b,a),w))!=mp.end()) return 2-mp[make_pair(P(b,a),w)];
     printf("? %d %d %d\n",a,b,w);
     fflush(stdout);
     string str;
@@ -38,8 +40,9 @@ void answer(int x)
     printf("! %d\n",x);
     fflush(stdout);
 }
-void insert(int k,int l,int r,int x,int y,int id)
+void insert(int &k,int l,int r,int x,int y,int id)
 {
+    if(!k) k=++tot;
     if(l>y||x>r) return;
     if(l>=x&&r<=y)
     {
@@ -49,25 +52,45 @@ void insert(int k,int l,int r,int x,int y,int id)
             ans[k]=id;
             return;
         }
-        int lans=compare(ans[k],id,l),rans=compare(ans[k],id,r);
-        if(lans<=1&&rans<=1) return;
-        if(lans>=1&&rans>=1) {ans[k]=id; return;}
+        if(l==r)
+        {
+            int res=compare(ans[k],id,l);
+            if(res>=1) ans[k]=id;
+            return; 
+        }
         int mid=(l+r)/2;
-        if(lans>=1) swap(ans[k],id);
-        if(compare(ans[k],id,mid)<=1) insert(k*2+1,mid+1,r,x,y,id);
-        else swap(ans[k],id),insert(k*2,l,mid,x,y,id);
+        int lans=compare(ans[k],id,l),mans=compare(ans[k],id,mid);
+        if(lans<=1&&mans<=1) 
+        {
+            insert(rson[k],mid+1,r,x,y,id);
+        }
+        else if(lans>=1&&mans>=1)
+        {
+            swap(ans[k],id);
+            insert(rson[k],mid+1,r,x,y,id);
+        }
+        else if(lans>=1&&mans<=1)
+        {
+            insert(lson[k],l,mid,x,y,id);
+        }
+        else if(lans<=1&&mans>=1)
+        {
+            swap(ans[k],id);
+            insert(lson[k],l,mid,x,y,id);
+        }
         return;
     }
     int mid=(l+r)/2;
-    insert(k*2,l,mid,x,y,id); insert(k*2+1,mid+1,r,x,y,id);
+    insert(lson[k],l,mid,x,y,id); insert(rson[k],mid+1,r,x,y,id);
 }
 void query(int k,int l,int r,int x)
 {
+    if(!k) return;
     if(has[k]) v.push_back(ans[k]);
     if(l==r) return;
     int mid=(l+r)/2;
-    if(x<=mid) query(k*2,l,mid,x);
-    else query(k*2+1,mid+1,r,x);
+    if(x<=mid) query(lson[k],l,mid,x);
+    else query(rson[k],mid+1,r,x);
 }
 int read_query()
 {
@@ -78,17 +101,22 @@ int read_query()
     scanf("%d",&x);
     return x;
 }
+int perm[MAXN];
 int main()
 {
     scanf("%d",&n);
-    for(int i=1;i<=n;i++) insert(1,1,100000,1,100000,i);
+    for(int i=0;i<=n-1;i++) perm[i]=i;
+    random_shuffle(perm,perm+n);
+    int root;
+    for(int i=0;i<=n-1;i++) insert(root,1,100000,1,100000,perm[i]);
     prepare();
     int x;
+    cnt=0;
     do
     {
         x=read_query();
         v.clear();
-        query(1,1,100000,x);
+        query(root,1,100000,x);
         sort(v.begin(),v.end());
         v.erase(unique(v.begin(),v.end()),v.end());
         int cur=v[0];
