@@ -21,7 +21,7 @@ bool flag;
 vector<P> op;
 bool cmp(int x,int y)
 {
-    if(dep[x]==dep[y]) return x<y;
+    if(dep[x]==dep[y]) return x>y;
     return dep[x]>dep[y];
 }
 void dfs(int v,int p,int d)
@@ -40,12 +40,13 @@ void dfs2(int v,int p)
     for(auto to:G[v])
     {
         if(to==p||fixed[to]) continue;
-        dfs2(to,v);
         if(has[to]) children_cnt[v]++;
+        dfs2(to,v);
     }
 }
 void try_push(int v,int p)
 {
+    assert(fa[v]==p);
     for(auto to:G[v])
     {
         if(to==p||fixed[to]) continue;
@@ -55,6 +56,7 @@ void try_push(int v,int p)
     {
         for(auto to:G[v])
         {
+            assert(!has[to]);
             if(to==p||fixed[to]) continue;
             if(!children_cnt[to])
             {
@@ -62,13 +64,14 @@ void try_push(int v,int p)
                 has[v]=false;
                 children_cnt[fa[v]]--; children_cnt[v]++;
                 op.push_back(P(v,to));
+                return;
             }
-            return;
         }
     }
 }
 void try_pull(int v,int p)
 {
+    assert(fa[v]==p);
     if(flag) return;
     maximum_children[v]=max(maximum_children[v],children_cnt[v]);
     if(has[v])
@@ -142,6 +145,7 @@ int main()
         order.clear();
         for(int i=1;i<=n;i++) order.push_back(i);
         sort(order.begin(),order.end(),cmp);
+
         scanf("%d",&k);
         v1.clear();
         for(int i=0;i<k;i++)
