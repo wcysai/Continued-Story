@@ -34,10 +34,8 @@ bool dfs(int v)
     }
     return false;
 }
-int bipartite_matching()
+void bipartite_matching()
 {
-    int res=0;
-    memset(match,-1,sizeof(match));
     for(int v=1;v<=V;v++)
     {
         if(match[v]<0)
@@ -49,20 +47,24 @@ int bipartite_matching()
             }
         }
     }
-    return res;
 }
 int main()
 {
     scanf("%lld",&n);
-    ll need=min(n/2,500LL);
+    ll need=min(n/2,200LL);
     memset(match,-1,sizeof(match));
     string ans="1"; res=0;
     for(int i=1;i<=need;i++)
     {
-        for(ll j=n;j>n-i+1;j--) if(j%i==0) add_edge(i,n-j+1+need);
-        for(int j=1;j<=i;j++) if((n-i+1)%j==0) add_edge(j,need+i);
+        for(ll j=n;j>n-i+1;j--) 
+            if(j%i==0) 
+                add_edge(i,n-j+1+need);
+        for(int j=1;j<=i;j++) 
+            if((n-i+1)%j==0) 
+                add_edge(j,need+i);
         V=2*need;
-        if(bipartite_matching()==i) ans+="1"; else ans+="0";
+        bipartite_matching();
+        if(res==i) ans+="1"; else ans+="0";
         assert(res<=i);
     }
     if(2LL*(int)ans.size()>n+1)
