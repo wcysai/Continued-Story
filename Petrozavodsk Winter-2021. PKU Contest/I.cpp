@@ -1,5 +1,5 @@
 #include<bits/stdc++.h>
-#define MAXN 205
+#define MAXN 405
 #define MAXM 100005
 #define INF 1000000000
 #define MOD 1000000007
@@ -10,120 +10,49 @@ typedef long long ll;
 typedef pair<int,int> P;
 int n,m;
 int color[MAXN][MAXN];
-vector<P> colors[MAXN];
-bool has[MAXN];
-int x,y,fore,rear,cnt,ans,father[MAXN],f[MAXN],path[MAXN],tra[MAXN],que[MAXN],match[MAXN];
-bool a[MAXN][MAXN],check[MAXN],treec[MAXN],pathc[MAXN];
-bool val[MAXN];
-vector<int> valid;
-inline void push(int x)
+bool has[MAXN][MAXN];
+int cnt[MAXN];
+int V;
+vector<int> G[MAXN];
+int match[MAXN];
+bool used[MAXN];
+void add_edge(int u,int v)
 {
-    que[++rear]=x;
-    check[x]=true;
-    if(!treec[x])
-    {
-        tra[++cnt]=x;
-        treec[x]=true;
-    }
+    G[u].push_back(v);
+    G[v].push_back(u);
 }
-int root(int x){return f[x]?f[x]=root(f[x]):x;}
-
-void clear()
+bool dfs(int v)
 {
-    for(int i=1,j;i<=cnt;++i)
+    used[v]=true;
+    for(int i=0;i<G[v].size();i++)
     {
-        j=tra[i];
-        check[j]=treec[j]=false;
-        father[j]=0,f[j]=0;
-    }
-}
-
-int lca(int u,int v)
-{
-    int len=0;
-    for(;u;u=father[match[u]])
-    {
-        u=root(u);
-        path[++len]=u;
-        pathc[u]=true;
-    }
-    for(;;v=father[match[v]])
-    {
-        v=root(v);
-        if(pathc[v]) break;
-    }
-    for(int i=1;i<=len;++i)
-    {
-        pathc[path[i]]=false;
-    }
-    return v;
-}
-
-void reset(int u,int p)
-{
-    for(int v;root(u)!=p;)
-    {
-        if(!check[v=match[u]]) push(v);
-        if(f[u]==0) f[u]=p;
-        if(f[v]==0) f[v]=p;
-        u=father[v];
-        if(root(u)!=p) father[u]=v;
-    }
-}
-
-void flower(int u,int v)
-{
-    int p=lca(u,v);
-    if(root(u)!=p) father[u]=v;
-    if(root(v)!=p) father[v]=u;
-    reset(u,p),reset(v,p);
-}
-
-bool find(int x)
-{
-    fore=rear=cnt=0,push(x);
-    while(fore++<rear)
-    {
-        int i=que[fore];
-        for(auto j:valid)
+        int u=G[v][i],w=match[u];
+        if(w<0||!used[w]&&dfs(w))
         {
-            if(a[i][j]&&root(i)!=root(j)&&match[j]!=i)
-              if(match[j]&&father[match[j]])
-                 flower(i,j);
-              else if(father[j]==0)
-              {
-                  father[j]=i;
-                  tra[++cnt]=j;
-                  treec[j]=true;
-                  if(match[j])
-                    push(match[j]);
-                  else
-                  {
-                      for(int k=i,l=j,p;k;l=p,k=father[l])
-                      {
-                          p=match[k];
-                          match[k]=l;
-                          match[l]=k;
-                      }
-                      return true;
-                  }
-              }
+            match[v]=u;
+            match[u]=v;
+            return true;
         }
     }
     return false;
 }
-
-void matching()
+int bipartite_matching()
 {
-    ans=0;
-    for(int i=1;i<=m+1;i++) father[i]=f[i]=path[i]=tra[i]=que[i]=match[i]=check[i]=treec[i]=pathc[i]=0;
-    for(auto x:valid)
-        if(match[x]==0)
+    int res=0;
+    memset(match,-1,sizeof(match));
+    for(int v=1;v<=V;v++)
+    {
+        if(match[v]<0)
         {
-            if(find(x)) ans++;
-            clear();
+            memset(used,0,sizeof(used));
+            if(dfs(v))
+            {
+                res++;
+            }
         }
-}
+    }
+    return res;
+} 
 int main()
 {
     scanf("%d%d",&n,&m);
@@ -133,56 +62,76 @@ int main()
         {
             int x;scanf("%d",&x);
             color[i][i+j]=color[i+j][i]=x;
-            colors[x].push_back(P(i,i+j));
         }
     }
+    memset(color,0,sizeof(color));
+    memset(has,false,sizeof(has));
     for(int i=1;i<=n;i++)
     {
-        memset(has,false,sizeof(has));
-        for(int j=1;j<=i;j++) 
+        for(int j=1;j<=n;j++) 
         {
-            if(has[color[i][j]])
+            if(i==j) continue;
+            if(has[i][color[i][j]])
             {
                 puts("No");
                 return 0;
             }
-            has[color[i][j]]=true;
+            has[i][color[i][j]]=true;
+            cnt[color[i][j]]++;
         }
     }
     if(m%2==0) {puts("No"); return 0;}
-    for(int i=1;i<=m+1;i++)
-        for(int j=1;j<=m+1;j++)
-            if(i==j||(i<=n&&j<=n)) a[i][j]=false; else a[i][j]=true;
     for(int i=1;i<=m;i++)
     {
-        valid.clear();
-        for(int j=1;j<=m+1;j++) val[j]=true;
-        for(auto p:colors[i]) val[p.F]=val[p.S]=false;
-        for(int j=1;j<=m+1;j++) if(val[j]) valid.push_back(j);
+        assert(cnt[i]%2==0);
+        if(n-cnt[i]>m+1-n)
+        {
+            puts("No");
+            return 0;
+        }
+        cnt[i]=(m+1-n-(n-cnt[i]))/2;
+    }
+    V=2*(m+1);
+    for(int i=n+1;i<=m+1;i++)
+    {
         printf("i=%d\n",i);
-        matching();
-        if(ans!=(m+1)/2-(int)colors[i].size()) 
+        for(int j=1;j<=2*(m+1);j++) G[j].clear();
+        for(int j=1;j<=m+1;j++)
+        {
+            if(i==j) continue;
+            if(color[i][j]) add_edge(j,m+1+color[i][j]);
+            else
+            {
+                for(int k=1;k<=m;k++) 
+                {
+                    if(!has[j][k]) 
+                    {
+                        if(j<=i||cnt[k]>0) add_edge(j,m+1+k);
+                    }
+                }
+            }
+        }
+        if(bipartite_matching()!=m)
         {
             puts("No");
             return 0;
         }
         for(int j=1;j<=m+1;j++)
         {
-            if(val[j])
+            if(i==j) continue;
+            if(!color[i][j])
             {
-                color[j][match[j]]=i;
-                a[j][match[j]]=false;
+                color[i][j]=color[j][i]=match[j]-(m+1);
+                has[i][color[i][j]]=has[j][color[i][j]]=true;
+                if(j>i) cnt[color[i][j]]--;
             }
         }
     }
     puts("Yes");
     for(int i=1;i<=m+1;i++)
     {
-        for(int j=1;j<=m+1-i;j++)
-        {
-            assert(color[i][i+j]>=1&&color[i][i+j]<=m);
+        for(int j=1;i+j<=m+1;j++)
             printf("%d ",color[i][i+j]);
-        }
         puts("");
     }
     return 0;
