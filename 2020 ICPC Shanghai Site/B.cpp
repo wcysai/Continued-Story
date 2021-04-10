@@ -2,7 +2,6 @@
 #define MAXN 55
 #define MAXV 205
 #define INF 1000000000
-#define INF2 1000000000000LL
 using namespace std;
 typedef long long ll;
 typedef pair<ll,int> P;
@@ -25,7 +24,7 @@ ll min_cost_flow(int s,int t,int f)
     while(true)
     {
         queue<int>que;
-        fill(dist+1,dist+V+1,INF2);
+        fill(dist+1,dist+V+1,INF);
         fill(inque+1,inque+V+1,false);
         dist[s]=0;
         que.push(s);
@@ -48,7 +47,6 @@ ll min_cost_flow(int s,int t,int f)
             }
             inque[u]=false;
         }
-        if(dist[t]==INF2) return -1;
         if(dist[t]>=0) return res;
         int d=f;
         for(int v=t;v!=s;v=prevv[v]) d=min(d,G[prevv[v]][preve[v]].cap);
@@ -79,8 +77,8 @@ int main()
         }
     for(int i=1;i<=n;i++) scanf("%d%d",&l[i],&r[i]);
     for(int i=1;i<=m;i++) scanf("%d%d",&L[i],&R[i]);
-    V=n+m+4;
-    int s=n+m+1,t=n+m+2,S=t+1,T=S+1;
+    V=n+m+2;
+    int s=n+m+1,t=n+m+2;
     for(int i=1;i<=n;i++)
         for(int j=1;j<=m;j++)
         {
